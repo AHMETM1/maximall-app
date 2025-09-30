@@ -4,6 +4,12 @@ class DefaultConfig {
   static String environment = '';
   static String appName = 'Fluxstore';
   static bool enableRemoteConfigFirebase = false;
+  part of '../config.dart';
+
+  // 🔹 Shopify Config (Senin mağaza ayarların)
+  static const String shopifyStoreUrl = "https://maximalliq.com";
+  static const String shopifyStorefrontAccessToken = "b2dcf187cf1f77946f5a60e37fd6dfda";
+
 
   /// Sets the applicable end user consent state.
   /// By default, no consent mode values are set.
