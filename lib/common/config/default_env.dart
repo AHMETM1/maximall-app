@@ -40,17 +40,22 @@ class DefaultConfig {
     'securityStorageConsentGranted': null,
   };
   static bool enableFacebookAppEvents = false;
-  static bool enableCrashAnalytics = false;
-  static String defaultLanguage = '';
-  static String baseUrl = '';
-  static String webProxy = '';
-  static Map serverConfig = {};
-  static String appConfig = '';
-  static bool defaultDarkTheme = false;
-  static String countryCodeDefault = 'VN';
-  static String dialCodeDefault = '+84';
-  static String nameDefault = 'Vietnam';
-  static OrderConfig orderConfig = const OrderConfig(version: 1);
+static bool enableCrashAnalytics = false;
+static String defaultLanguage = '';
+static String baseUrl = '';
+static String webProxy = '';  
+// 🔹 Shopify Server Config
+static Map serverConfig = {
+  "type": "shopify",
+  "url": shopifyStoreUrl,
+  "accessToken": shopifyStorefrontAccessToken,
+};
+static String appConfig = '';
+static bool defaultDarkTheme = false;
+static String countryCodeDefault = 'VN';
+static String dialCodeDefault = '+84';
+static String nameDefault = 'Vietnam';
+static OrderConfig orderConfig = const OrderConfig(version: 1);
   static double? maxTextScale;
   static Map<String, dynamic> phoneNumberConfig = {
     'enable': false,
