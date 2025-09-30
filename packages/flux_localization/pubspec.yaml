@@ -1,0 +1,39 @@
+name: flux_localization
+description: "A new Flutter package project."
+version: 0.0.1
+homepage: https://inspireui.com
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+  # Fix issue to compatible with Flutter 3.32
+  multiple_localization:
+    git:
+      url: https://github.com/inspireui/flutter_multiple_localization.git
+      ref: 48b65fa88ed468331d56ee86a102d808596c0a50
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  intl_utils: any
+
+flutter_intl:
+  enabled: true
+  arb_dir: lib/src/l10n
+  output_dir: lib/src/generated
+  use_deferred_loading: true
+
+flutter:
+  generate: true
+  assets:
+    - lib/src/l10n/

@@ -1,0 +1,274 @@
+buildscript {
+    repositories {
+        // ...
+        maven { url 'https://plugins.gradle.org/m2/' } // Gradle Plugin Portal
+    }
+    dependencies {
+        // ...
+    }
+}
+
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+def envProperties = new Properties()
+def envPropsFile = rootProject.file('../configs/env.props')
+def envPropertiesFile = rootProject.file('../configs/env.properties')
+
+if (envPropertiesFile.exists() && envPropsFile.exists()) {
+    println "====================================================================="
+    println "⚠️  Warning: env.properties is deprecated, please rename to env.props"
+    println "====================================================================="
+}
+
+if (envPropertiesFile.exists() && !envPropsFile.exists()) {
+    println "================================================================="
+    println "⚠️  Warning: env.properties is deprecated and should not be used"
+    println "🪄️  env.properties has been renamed to env.props automatically"
+    println "================================================================="
+
+    ant.move file: '../../configs/env.properties', tofile: '../../configs/env.props'
+}
+
+envPropsFile = rootProject.file('../configs/env.props')
+envPropertiesFile = rootProject.file('../configs/env.properties')
+
+if (envPropsFile.exists()) {
+    println "🔧 Loading configs from configs/env.props...\n"
+    envPropsFile.withReader('UTF-8') { reader ->
+        envProperties.load(reader)
+    }
+} else {
+    if (envPropertiesFile.exists()) {
+        println "🔧 Loading configs from configs/env.properties...\n"
+        envPropertiesFile.withReader('UTF-8') { reader ->
+            envProperties.load(reader)
+        }
+    }
+}
+
+
+android {
+    compileSdkVersion 35
+
+    ndkVersion "25.1.8937393"
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+    compileOptions {
+        // Flag to enable support for the new language APIs
+        coreLibraryDesugaringEnabled true
+
+        // Sets Java compatibility to Java 8
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    tasks.withType(JavaCompile).configureEach {
+        options.warnings = false
+    }
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId envProperties.getProperty('androidPackageName', '')
+        minSdkVersion 26
+        targetSdkVersion 35
+
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // // Zoho SalesIQ Mobilisten
+        // Comment `resourceConfigurations += ['en']` to fix Zoho SaleIQ not support
+        // multi-language on Android.
+        // Un-comment to reduce build size.
+        resourceConfigurations += ['en']
+        
+        // Using `manifestPlaceholders` will replace the param on
+        // `AndroidManifest.xml` file with the correct value.
+        // For example: <meta-data android:name="default-url"
+        // android:value="${websiteUrl}" />
+        // will be <meta-data android:name="default-url" android:value="inspireui.com" />
+        manifestPlaceholders += [
+                envatoPurchaseCode           : envProperties.getProperty('envatoPurchaseCode', ''),
+                websiteUrl                   : envProperties.getProperty('websiteUrl', ''),
+                websiteDomain                : envProperties.getProperty('websiteDomain', ''),
+                customScheme                 : envProperties.getProperty('customScheme', ''),
+                googleApiKeyAndroid          : envProperties.getProperty('googleApiKeyAndroid', ''),
+                adMobAppIdAndroid            : envProperties.getProperty('adMobAppIdAndroid', ''),
+                facebookClientToken          : envProperties.getProperty('facebookClientToken', ''),
+                facebookLoginProtocolScheme  : envProperties.getProperty('facebookLoginProtocolScheme', ''),
+                branchKeyLive                : envProperties.getProperty('branchKeyLive', ''),
+                branchKeyTest                : envProperties.getProperty('branchKeyTest', ''),
+                branchLiveLinkDomain         : envProperties.getProperty('branchLiveLinkDomain', ''),
+                branchLiveAlternateLinkDomain: envProperties.getProperty('branchLiveAlternateLinkDomain', ''),
+                branchTestLinkDomain         : envProperties.getProperty('branchTestLinkDomain', ''),
+                branchTestAlternateLinkDomain: envProperties.getProperty('branchTestAlternateLinkDomain', ''),
+                branchTestMode               : envProperties.getProperty('branchTestMode', ''),
+                shopUrl: envProperties.getProperty('shopUrl', ''),
+        ]
+
+        // If you use `resValue`, it will generate a resource of the type you
+        // specify into your app's res directory.
+        resValue 'string', 'facebookAppId', envProperties.getProperty('facebookAppId', '')
+
+        // Not sure why we need to use `appName` as resValue.
+        resValue 'string', 'app_name', envProperties.getProperty('appName', '').replaceAll("'", "\\\\'")
+
+        // Notification color for Firebase
+        resValue 'color', 'notification_color', '#' + envProperties.getProperty('notificationColor', 'FF2EB0FE')
+
+        // Notification color for OneSignal
+        resValue 'string', 'onesignal_notification_accent_color', envProperties.getProperty('notificationColor', 'FF2EB0FE')
+    }
+
+    signingConfigs {
+        release {
+            keyAlias envProperties.getProperty('keyAlias', '')
+            keyPassword envProperties.getProperty('keyPassword', '')
+            storeFile rootProject.file('../configs/' + envProperties.getProperty('storeFile', ''))
+            storePassword envProperties.getProperty('storePassword', '')
+        }
+    }
+
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig signingConfigs.release
+
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            signingConfig signingConfigs.release
+        }
+    }
+    namespace 'com.inspireui.fluxstore'
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+    lint {
+        checkReleaseBuilds false
+        disable 'InvalidPackage'
+    }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'androidx.browser:browser:1.8.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6'
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+}
+
+googleServices { disableVersionCheck = true }
+
+def srcFolderConfig = '../../configs/'
+def srcFolderCustomized = '../../configs/customized/'
+def destFolderGoogleService = './'
+def destFolderCustomized = '../../'
+def destFolderNotificationIcon = './src/main/res/drawable/'
+
+// Task copy file googleService
+task copyGoogleServices {
+    doLast {
+        copy {
+            from srcFolderConfig
+            into destFolderGoogleService
+            include 'google-services.json'
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+    }
+}
+
+task copyConfigFiles {
+    doLast {
+        copy {
+            from srcFolderCustomized
+            into destFolderCustomized
+            include '**'
+            exclude '**/.DS_Store'
+            exclude '**/Thumbs.db'
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+    }
+}
+
+def notificationIcon = envProperties.getProperty('notificationIcon', '')
+task copyNotificationIcon {
+    doLast {
+        copy {
+            from srcFolderConfig
+            into destFolderNotificationIcon
+            include notificationIcon
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            
+            rename { String fileName ->
+                fileName.replace(notificationIcon, 'ic_stat_onesignal_default.png')
+            }
+
+        }
+        
+        def originalFile = rootProject.file(destFolderNotificationIcon + notificationIcon)
+        if (originalFile.exists()) {
+            originalFile.delete()
+        }
+    }
+}
+
+/// Pre-build task
+tasks.named("preBuild") {
+    /// Copy google services
+    println "🔧 Copying configs/google-services.json to android/app/google-services.json"
+    dependsOn(copyGoogleServices)
+
+    /// Copy customized files
+    println "🔧 Copying configs/customized to project..."
+    dependsOn(copyConfigFiles)
+
+    /// Copy notification icon
+    def notificationIconFile = rootProject.file('../configs/' + notificationIcon)
+    if (notificationIcon && notificationIconFile.exists()) {
+        println "🔧 Copying configs/" + notificationIcon + " to " + destFolderNotificationIcon + "ic_stat_onesignal_default.png"
+        dependsOn(copyNotificationIcon)
+    }
+
+    println "\n🪄  Building " + envProperties['appName'] + "... 🪄\n"
+    println "\n🔑 Signing with keystore " + envProperties['storeFile'] + "... 🔑\n"
+}

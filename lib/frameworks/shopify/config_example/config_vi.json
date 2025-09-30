@@ -1,0 +1,241 @@
+{
+  "HorizonLayout": [
+    {
+      "layout": "logo",
+      "showMenu": true,
+      "showSearch": true,
+      "showLogo": true
+    },
+    {
+      "layout": "category",
+      "type": "icon",
+      "wrap": false,
+      "size": 1.0,
+      "radius": 50.0,
+      "items": [
+        {
+          "category": "gid://shopify/Collection/444187279665",
+          "image": "https://user-images.githubusercontent.com/1459805/62820029-2e679f00-bb88-11e9-80de-fdf115cfd942.png",
+          "colors": [
+            "#3CC2BF",
+            "#3CC2BF"
+          ],
+          "originalColor": false
+        },
+        {
+          "category": "gid://shopify/Collection/446745641265",
+          "image": "https://trello.com/1/cards/60a62a9bca5053572a669dee/attachments/60a62abccf14cb63646c1706/previews/60a62abdcf14cb63646c1728/download/ic_dress.png",
+          "colors": [
+            "#3E6AB5",
+            "#3E6AB5"
+          ]
+        },
+        {
+          "category": "gid://shopify/Collection/446745674033",
+          "image": "https://trello.com/1/cards/60a62a9bca5053572a669dee/attachments/60a62ac38749561a23fed73c/previews/60a62ac38749561a23fed76d/download/ic_shorts.png",
+          "colors": [
+            "#53A2CC",
+            "#53A2CC"
+          ]
+        },
+        {
+          "category": "gid://shopify/Collection/446745936177",
+          "image": "https://trello.com/1/cards/60a62a9bca5053572a669dee/attachments/60a62ac27eb3b0027e045f80/previews/60a62ac27eb3b0027e045fee/download/ic_shoes.png",
+          "colors": [
+            "#53688A",
+            "#53688A"
+          ]
+        },
+        {
+          "category": "gid://shopify/Collection/446745739569",
+          "image": "https://trello.com/1/cards/60a62a9bca5053572a669dee/attachments/60a62ac568d4170599acd4ca/previews/60a62ac568d4170599acd4dd/download/ic_tie.png",
+          "colors": [
+            "#43506A",
+            "#43506A"
+          ]
+        },
+        {
+          "category": "gid://shopify/Collection/446745641265",
+          "image": "https://trello.com/1/cards/60a62a9bca5053572a669dee/attachments/60a62ac048c3790a65a5f75f/previews/60a62ac048c3790a65a5f763/download/ic_panties.png",
+          "colors": [
+            "#12B58C",
+            "#12B58C"
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "bannerImage",
+      "isSlider": true,
+      "autoPlay": false,
+      "showNumber": false,
+      "design": "default",
+      "showBackGround": true,
+      "radius": 2.0,
+      "items": [
+        {
+          "category": "gid://shopify/Collection/446745674033",
+          "image": "https://user-images.githubusercontent.com/1459805/59846818-12672e80-938b-11e9-8184-5f7bfe66f1a2.png",
+          "padding": 15.0
+        },
+        {
+          "category": "gid://shopify/Collection/446745641265",
+          "image": "https://user-images.githubusercontent.com/1459805/60091575-1f12ca80-976f-11e9-962c-bdccff60d143.png",
+          "padding": 15.0
+        },
+        {
+          "product": "8396924911921",
+          "image": "https://user-images.githubusercontent.com/1459805/60091808-a19b8a00-976f-11e9-9cc7-576ca05c2442.png",
+          "padding": 15.0
+        }
+      ]
+    },
+    {
+      "layout": "bannerImage",
+      "items": [
+        {
+          "category": "gid://shopify/Collection/446745674033",
+          "image": "https://user-images.githubusercontent.com/1459805/59846823-12ffc500-938b-11e9-8d93-65ead3d6b1dd.png",
+          "padding": 5.0
+        },
+        {
+          "category": "gid://shopify/Collection/446745674033",
+          "image": "https://user-images.githubusercontent.com/1459805/59846824-12ffc500-938b-11e9-8d5a-fc42cb1b7658.png",
+          "padding": 5.0,
+          "featured": true
+        }
+      ]
+    },
+    {
+      "name": "Xem gần đây",
+      "layout": "recentView"
+    },
+    {
+      "name": "Bộ sưu tập Nu ữ",
+      "image": "",
+      "layout": "threeColumn",
+      "category": "gid://shopify/Collection/446745444657",
+      "isSnapping": true
+    },
+    {
+      "name": "Bộ sưu tập Nam",
+      "image": "",
+      "layout": "twoColumn",
+      "category": "gid://shopify/Collection/444187279665",
+      "isSnapping": true
+    },
+    {
+      "name": "Bài viết",
+      "layout": "blog"
+    },
+    {
+      "name": "Bộ sưu tập mới",
+      "layout": "staggered",
+      "limit": 20,
+      "category": "gid://shopify/Collection/446745674033"
+    }
+  ],
+  "Setting": {
+    "MainColor": "#3FC1BE",
+    "ProductListLayout": "list",
+    "StickyHeader": false
+  },
+  "TabBar": [
+    {
+      "layout": "home",
+      "icon": "home",
+      "pos": 100,
+      "fontFamily": "CupertinoIcons",
+      "key": "p1q235ba14"
+    },
+    {
+      "pos": 200,
+      "layout": "category",
+      "icon": "rectangle_grid_1x2",
+      "fontFamily": "CupertinoIcons",
+      "categoryLayout": "card",
+      "key": "hwu0rkrizt",
+      "remapCategories": [
+        {
+          "category": "gid://shopify/Collection/446745674033",
+          "name": "Đặc trưng",
+          "image": "https://cdn.shopify.com/s/files/1/0331/5230/3239/collections/fashion-PN7FSF5_350x500.jpg?v=1581920391"
+        },
+        {
+          "parent": "gid://shopify/Collection/446745674033",
+          "category": "gid://shopify/Collection/446745739569",
+          "name": "Túi"
+        },
+        {
+          "parent": "gid://shopify/Collection/446745674033",
+          "category": "gid://shopify/Collection/446745641265",
+          "name": "Quần áo"
+        },
+        {
+          "parent": "gid://shopify/Collection/446745674033",
+          "category": "gid://shopify/Collection/446745936177",
+          "name": "Giày"
+        },
+        {
+          "category": "gid://shopify/Collection/446745444657",
+          "name": "Nữ"
+        },
+        {
+          "category": "gid://shopify/Collection/444187279665",
+          "name": "Nam"
+        }
+      ]
+    },
+    {
+      "key": "2reihs4qzc",
+      "icon": "search",
+      "layout": "search",
+      "fontFamily": "CupertinoIcons",
+      "pos": 300,
+      "size": 24
+    },
+    {
+      "pos": 400,
+      "icon": "bag",
+      "layout": "cart",
+      "categoryLayout": "cart",
+      "key": "a2xts0oou6",
+      "fontFamily": "CupertinoIcons"
+    },
+    {
+      "layout": "profile",
+      "fontFamily": "CupertinoIcons",
+      "pos": 500,
+      "key": "69jw5yx12d",
+      "icon": "person"
+    }
+  ],
+  "searchSuggestion": [
+    "Dưới đây là một số gợi ý:",
+    "man",
+    "dress",
+    "Stitch"
+  ],
+  "OnBoarding": {
+    "data": [
+      {
+        "title": "Chào mừng bạn đến với Fluxstore",
+        "image": "assets/images/fogg-delivery-1.png",
+        "desc": "Fluxstore is on the way to serve you. ",
+        "background": "#FFF3F2"
+      },
+      {
+        "title": "Kết nối thế giới xung quanh",
+        "image": "assets/images/fogg-uploading-1.png",
+        "desc": "See all things happening around you just by a click in your phone. Fast, convenient and clean.",
+        "background": "#F2FFFC"
+      },
+      {
+        "title": "Bắt đầu nào",
+        "image": "fogg-order-completed.png",
+        "desc": "Waiting no more, let's see what we get!",
+        "background": "#F9F2FF"
+      }
+    ]
+  }
+}

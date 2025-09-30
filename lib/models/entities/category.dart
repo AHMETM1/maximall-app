@@ -1,0 +1,384 @@
+import 'package:flux_ui/flux_ui.dart';
+import 'package:quiver/strings.dart';
+
+import '../../common/config.dart';
+import '../../common/constants.dart';
+import '../../common/tools.dart';
+import '../../modules/dynamic_layout/helper/helper.dart';
+import '../../services/service_config.dart';
+import '../serializers/product_category.dart';
+import 'product.dart';
+
+class Category {
+  String? id;
+  String? sku;
+  String? name;
+  String? image;
+  String? parent;
+  String? slug;
+  int? totalProduct;
+  List<Product>? products;
+  bool? hasChildren = false;
+  List<Category> subCategories = [];
+  String? onlineStoreUrl;
+
+  int? _leveldepth;
+
+  Category({
+    this.id,
+    this.sku,
+    this.name,
+    this.image,
+    this.parent,
+    this.slug,
+    this.totalProduct,
+    this.products,
+    this.hasChildren = false,
+    required this.subCategories,
+  });
+
+  String get displayName => name ?? 'Unknown';
+
+  Category.fromListingJson(Map<String, dynamic>? parsedJson) {
+    try {
+      id = Tools.getValueByKey(
+              parsedJson, DataMapping().kCategoryDataMapping['id'])
+          .toString();
+      final rawName = Tools.getValueByKey(
+          parsedJson, DataMapping().kCategoryDataMapping['name']);
+      name = rawName?.toString().unescape();
+      parent = Tools.getValueByKey(
+              parsedJson, DataMapping().kCategoryDataMapping['parent'])
+          .toString();
+      totalProduct = int.tryParse(Tools.getValueByKey(
+              parsedJson, DataMapping().kCategoryDataMapping['count'])
+          .toString());
+      var termImage = Tools.getValueByKey(
+          parsedJson, DataMapping().kCategoryDataMapping['image']);
+      if (termImage is String) {
+        image = termImage;
+      } else if (termImage is List && termImage.isNotEmpty) {
+        var imageCategory = termImage[0]['file'];
+        if (imageCategory is String && imageCategory.isNotEmpty) {
+          image = '${ServerConfig().url}/wp-content/uploads/$imageCategory';
+        }
+      }
+      image ??= DataMapping().kCategoryImages[id!] ?? kDefaultImage;
+    } catch (e, trace) {
+      printError(e, trace);
+    }
+  }
+
+  Category.fromJson(Map parsedJson) {
+    if (parsedJson['slug'] == 'uncategorized') {
+      return;
+    }
+
+    try {
+      id = parsedJson['id']?.toString() ?? parsedJson['term_id'].toString();
+      name = parsedJson['name']?.toString().unescape();
+      parent = parsedJson['parent']?.toString();
+      totalProduct = parsedJson['count'];
+      slug = parsedJson['slug'];
+      final image = parsedJson['image'];
+      if (image != null) {
+        if (image is Map) {
+          this.image = image['src'].toString();
+        } else {
+          this.image = image.toString();
+        }
+      } else {
+        this.image = kDefaultImage;
+      }
+      hasChildren = parsedJson['has_children'] ?? false;
+    } catch (e, trace) {
+      printError(e, trace);
+    }
+  }
+
+  Category.fromServerlessJson(Map parsedJson) {
+    if (parsedJson['slug'] == 'uncategorized') {
+      return;
+    }
+
+    try {
+      id = parsedJson['id']?.toString();
+      name = parsedJson['Name']?.toString().unescape();
+
+      parent = parsedJson['ParentId']?.toString();
+      if (parent?.isEmpty ?? true) {
+        parent = kRootCategoryID;
+      }
+
+      totalProduct = parsedJson['Count'];
+
+      slug = parsedJson['Slug'];
+      hasChildren = bool.tryParse(parsedJson['HasChildren'].toString());
+      final image = parsedJson['Image'];
+      if (image != null) {
+        if (image is Map) {
+          this.image = image['src'].toString();
+        } else {
+          this.image = image.toString();
+        }
+      } else {
+        this.image = kDefaultImage;
+      }
+    } catch (e, trace) {
+      printLog(e.toString());
+      printLog(trace.toString());
+    }
+  }
+
+  Category copyWith({
+    String? id,
+    String? sku,
+    String? name,
+    String? image,
+    String? parent,
+    String? slug,
+    int? totalProduct,
+    List<Product>? products,
+    bool? hasChildren,
+    List<Category>? subCategories,
+  }) {
+    return Category(
+        id: id ?? this.id,
+        sku: sku ?? this.sku,
+        name: name ?? this.name,
+        image: image ?? this.image,
+        parent: parent ?? this.parent,
+        slug: slug ?? this.slug,
+        totalProduct: totalProduct ?? this.totalProduct,
+        products: products ?? this.products,
+        subCategories: subCategories ?? this.subCategories);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'slug': slug,
+      'parent': parent,
+      'totalProduct': totalProduct,
+      'image': image,
+    };
+  }
+
+  /// Convert Category to Firestore Map
+  Map<String, dynamic> toFirestoreMap() {
+    return {
+      'Id': id,
+      'Name': name,
+      'Slug': slug,
+      'Parent': parent,
+      'TotalProduct': totalProduct,
+      'Image': image,
+    };
+  }
+
+  Category.fromOpencartJson(Map parsedJson) {
+    try {
+      id = parsedJson['id'] ?? kRootCategoryID;
+      name = parsedJson['name']?.toString().unescape();
+      image = parsedJson['image'] ?? kDefaultImage;
+      totalProduct = int.tryParse(parsedJson['count'].toString()) ?? 0;
+      parent = parsedJson['parent'] != null
+          ? parsedJson['parent'].toString()
+          : kRootCategoryID;
+    } catch (e, trace) {
+      printError(e, trace);
+    }
+  }
+
+  Category.fromMagentoJson(Map parsedJson) {
+    try {
+      id = '${parsedJson['id']}';
+      name = parsedJson['name']?.toString().unescape();
+      image = parsedJson['image'] ?? kDefaultImage;
+      parent = '${parsedJson['parent_id']}';
+      totalProduct = parsedJson['product_count'];
+    } catch (e, trace) {
+      printError(e, trace);
+    }
+  }
+
+  Category.fromJsonShopify(Map parsedJson) {
+    if (parsedJson['slug'] == 'uncategorized') {
+      return;
+    }
+
+    try {
+      id = parsedJson['id'];
+      sku = parsedJson['id'];
+      name = parsedJson['title']?.toString().unescape();
+      parent = kRootCategoryID;
+      onlineStoreUrl = parsedJson['onlineStoreUrl'];
+      final image = parsedJson['image'];
+      if (image != null) {
+        this.image = image['url'].toString();
+      } else {
+        this.image = kDefaultImage;
+      }
+    } catch (e, trace) {
+      printError(e, trace);
+    }
+  }
+
+  Category.fromJsonPresta(Map parsedJson, apiLink) {
+    try {
+      id = parsedJson['id'].toString();
+      name = parsedJson['name']?.toString().unescape();
+      parent = parsedJson['id_parent']?.toString();
+      image = apiLink('images/categories/$id');
+      totalProduct = parsedJson['nb_products_recursive'] != null
+          ? int.parse(parsedJson['nb_products_recursive'].toString())
+          : null;
+      hasChildren = parsedJson['has_children'] == true;
+      _leveldepth = int.tryParse('${parsedJson['level_depth']}');
+    } catch (e, trace) {
+      printError(e, trace);
+    }
+  }
+
+  Category.fromJsonHaravan(Map parsedJson) {
+    try {
+      id = parsedJson['id'].toString();
+      name = parsedJson['title']?.toString().unescape();
+      // Haravan has only 1 level, so the category always is root
+      parent = kRootCategoryID;
+      image = parsedJson['image']?['src'];
+      // totalProduct = parsedJson['nb_products_recursive'] != null
+      //     ? int.parse(parsedJson['nb_products_recursive'].toString())
+      //     : null;
+      // hasChildren = parsedJson['has_children'] == true;
+      // _leveldepth = int.tryParse('${parsedJson['level_depth']}');
+    } catch (e, trace) {
+      printError(e, trace);
+    }
+  }
+
+  Category.fromJsonStrapi(Map<String, dynamic> parsedJson, Function apiLink) {
+    try {
+      var model = SerializerProductCategory.fromJson(parsedJson);
+      id = model.id.toString();
+      name = parsedJson['name']?.toString().unescape();
+      parent = kRootCategoryID;
+      totalProduct = model.products!.length;
+
+      products = [];
+      for (var product in model.products!) {
+        var newProduct = Product.fromJsonStrapi(product, apiLink);
+        products!.add(newProduct);
+      }
+
+      if (model.featureImage != null) {
+        image = apiLink(model.featureImage!.url);
+      } else {
+        image = kDefaultImage;
+      }
+    } catch (e, trace) {
+      printError(e, trace);
+    }
+  }
+
+  Category.fromWordPress(Map parsedJson) {
+    id = parsedJson['id'].toString();
+    name = parsedJson['name']?.toString().unescape();
+    parent = parsedJson['parent'].toString();
+    totalProduct = parsedJson['count'];
+    if (kCategoryStaticImages.isNotEmpty) {
+      /// prioritize local category images over remote ones
+      image = kCategoryStaticImages[parsedJson['id']] ?? kDefaultImage;
+    } else {
+      /// "Organize my uploads into month- and year-based folders" must be unchecked
+      /// at CMS DashBoard > Settings > Media
+      /// Automatically get category image by following common format:
+      /// https://customer-site.com/wp-content/uploads/category-{category-id}.jpeg
+      image = '${ServerConfig().url}/wp-content/uploads/category-$id.jpeg';
+    }
+  }
+
+  // final image = parsedJson['image'];
+  // if (image != null) {
+  //   this.image = image['src'].toString();
+  // } else {
+  //   this.image = kCategoryStaticImages[parsedJson['id']] ?? kDefaultImage;
+  // }
+
+  Category.fromNotion(Map parsedJson) {
+    try {
+      id = parsedJson['id'] ?? '';
+      final properties = parsedJson['properties'];
+
+      if (properties == null) {
+        throw Exception('Something went wrong!');
+      }
+      name = NotionDataTools.fromTitle(properties['Name']);
+      final dataParent = NotionDataTools.fromRelation(properties['Parent']) ??
+          [kRootCategoryID];
+      parent = dataParent.isNotEmpty ? dataParent.first : kRootCategoryID;
+
+      totalProduct =
+          (NotionDataTools.fromNumber(properties['Count']) ?? 0) as int;
+      final getImage = NotionDataTools.fromFile(properties['Image']);
+
+      final slugData = NotionDataTools.fromRichText(properties['Slug']);
+
+      if (slugData?.isNotEmpty ?? false) {
+        slug = slugData!.first;
+      }
+
+      if (getImage != null && getImage.isNotEmpty) {
+        image = getImage.first;
+      } else {
+        image = kDefaultImage;
+      }
+    } catch (e, trace) {
+      printError(e, trace);
+    }
+  }
+
+  Category.fromBigCommerce(Map parsedJson) {
+    try {
+      id = '${parsedJson['id'] ?? ''}';
+
+      name = parsedJson['name']?.toString().unescape();
+
+      parent = '${parsedJson['parent_id']}';
+
+      totalProduct = Helper.formatInt(parsedJson['product_count'], null);
+
+      final getImage = parsedJson['image_url'];
+
+      hasChildren = null;
+
+      if (getImage != null && getImage is String && getImage.isNotEmpty) {
+        image = getImage;
+      } else {
+        image = kDefaultImage;
+      }
+    } catch (e, trace) {
+      printError(e, trace);
+    }
+  }
+
+  bool get isRoot => parent == kRootCategoryID || _leveldepth == 2;
+
+  @override
+  String toString() => 'Category { id: $id,  name: $name, isRoot: $isRoot }';
+
+  static List<Category> parseCategoryList(response) {
+    var categories = <Category>[];
+    if (response is Map && isNotBlank(response['message'])) {
+      throw Exception(response['message']);
+    } else {
+      for (var item in response) {
+        if (!item['slug'].toString().contains('uncategorized')) {
+          categories.add(Category.fromJson(item));
+        }
+      }
+      return categories;
+    }
+  }
+}

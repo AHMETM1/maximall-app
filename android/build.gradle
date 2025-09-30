@@ -1,0 +1,101 @@
+buildscript {
+    ext {
+        kotlinVersion = '2.1.21'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+
+        // // Zoho SalesIQ Mobilisten
+        // maven {
+        //     url 'https://maven.zohodl.com'
+        // }
+
+        maven {
+            url  "https://phonepe.mycloudrepo.io/public/repositories/phonepe-intentsdk-android"
+        }
+    }
+}
+
+rootProject.buildDir = '../build'
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.extensions.findByName("android") != null) {
+            // Ref: https://github.com/flutter/flutter/issues/153281#issuecomment-2292201697
+            Integer pluginCompileSdk = project.android.compileSdk
+            if (pluginCompileSdk != null && pluginCompileSdk < 31) {
+                // project.logger.warning(
+                //         "Warning: Overriding compileSdk version in Flutter plugin: "
+                //                 + project.name
+                //                 + " from "
+                //                 + pluginCompileSdk
+                //                 + " to 31 (to work around https://issuetracker.google.com/issues/199180389)."
+                // )
+                project.android {
+                    compileSdk 31
+                }
+            }
+
+            // Because when using ndkVersion 27.0.12077973, the apk size is too large.
+            // If don't set it to 27.0.12077973, when build apk, it will throw warning.
+            // So we need to set it to "25.1.8937393" if ndkVersion > "25.1.8937393".
+            // Ref: https://github.com/rive-app/rive-flutter/issues/274#issuecomment-2277089347
+            if (project.android.ndkVersion > "25.1.8937393") {
+                // project.logger.error(
+                //         "Warning: Overriding ndkVersion in Flutter plugin: "
+                //                 + project.name
+                //                 + " from "
+                //                 + project.android.ndkVersion
+                //                 + " to 25.1.8937393 (ref: https://github.com/rive-app/rive-flutter/issues/274#issuecomment-2277089347)."
+                // )
+                project.android {
+                    ndkVersion "25.1.8937393"
+                }
+            }
+
+            if (project.plugins.hasPlugin('kotlin-android')) {
+                // project.logger.error(
+                //         "Warning: upgrade Java version to VERSION_1_8 in Flutter plugin: "
+                //                 + project.name
+                // )
+                project.android {
+                    kotlinOptions {
+                        jvmTarget = "1.8"
+                    }
+                    compileOptions {
+                        sourceCompatibility = JavaVersion.VERSION_1_8
+                        targetCompatibility = JavaVersion.VERSION_1_8
+                    }
+                }
+            }
+        }
+        if (project.hasProperty('android')) {
+            project.android {
+                if (namespace == null) {
+                    // project.logger.error(
+                    //         "Warning: Adding missing namespace ("
+                    //                 + project.group + ") in Flutter plugin: "
+                    //                 + project.name
+                    //                 + " (to work around the error occurs after Android Gradle Plugin updated >= 8.x.x.)."
+                    // )
+                    namespace project.group
+                }
+            }
+        }
+    }
+}
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

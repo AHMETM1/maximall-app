@@ -1,0 +1,8 @@
+NSCameraUsageDescription = "Tato aplikace vyžaduje přístup ke kameře pro funkci čtečky QR kódů nebo čárových kódů, ke kterým lze přistupovat z vyhledávací lišty.";
+NSLocationAlwaysAndWhenInUseUsageDescription = "Tato aplikace potřebuje přístup k vaší poloze, aby ji zobrazila na obrazovce mapy a poskytovala služby založené na poloze";
+NSLocationAlwaysUsageDescription = "Tato aplikace potřebuje přístup k vaší poloze, aby ji zobrazila na obrazovce mapy a poskytovala služby založené na poloze";
+NSLocationWhenInUseUsageDescription = "Tato aplikace potřebuje přístup k vaší poloze, aby ji zobrazila na obrazovce mapy a poskytovala služby založené na poloze";
+NSMicrophoneUsageDescription = "Chtěli bychom mít přístup k mikrofonu, abychom mohli nahrávat hlasové zprávy";
+NSPhotoLibraryAddUsageDescription = "Chtěli bychom mít přístup k ukládání obrázků/videí ve vaší knihovně fotografií";
+NSPhotoLibraryUsageDescription = "Tato aplikace vyžaduje přístup k vaší knihovně fotografií pro výběr fotografie, kterou použijete jako profilový obrázek.";
+NSUserTrackingUsageDescription = "Tento identifikátor bude použit k doručování personalizovaných reklam. \"Požádejte aplikaci, aby nesledovala\" omezí schopnost reklamní sítě'doručovat vám relevantní reklamy, ale nesníží počet reklam, které obdržíte. ";

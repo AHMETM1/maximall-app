@@ -1,0 +1,46 @@
+import 'package:flutter/material.dart';
+import 'package:flux_localization/flux_localization.dart';
+import 'package:inspireui/extensions/color_extension.dart';
+
+import '../../../models/entities/product.dart';
+import '../action_button_mixin.dart';
+
+class CartButton extends StatelessWidget with ActionButtonMixin {
+  final Product product;
+  final bool hide;
+  final int quantity;
+  final bool enableBottomAddToCart;
+
+  const CartButton({
+    super.key,
+    required this.product,
+    required this.hide,
+    this.enableBottomAddToCart = false,
+    this.quantity = 1,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (hide) return const SizedBox();
+
+    return TextButton(
+      style: TextButton.styleFrom(
+        backgroundColor: Theme.of(context).primaryColor,
+        disabledForegroundColor: Colors.white.withValueOpacity(0.38),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      ),
+      onPressed: () => addToCart(
+        context,
+        product: product,
+        quantity: quantity,
+        enableBottomAddToCart: enableBottomAddToCart,
+      ),
+      child: Text(
+        S.of(context).addToCart,
+        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+              color: Colors.white,
+            ),
+      ),
+    );
+  }
+}

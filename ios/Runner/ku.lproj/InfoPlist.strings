@@ -1,0 +1,8 @@
+NSCameraUsageDescription = "Ev serlêdana hewce ye gihîştinê wênegerê ji bo taybetmendiya skanera kodên QR an Barcode ku dikare ji barê lêgerînê bê gihanîn.";
+NSLocationAlwaysUsageDescription = "Ev serlêdana hewce ye gihîştinê cîhê teyê de ku li pêşekê nexşeyê nîşan bide û xizmetên li ser cîhê pêşkêş bike.";
+NSLocationWhenInUseUsageDescription = "Ev serlêdana hewce ye gihîştinê cîhê teyê de ku li pêşekê nexşeyê nîşan bide û xizmetên li ser cîhê pêşkêş bike.";
+NSLocationAlwaysAndWhenInUseUsageDescription = "Ev serlêdana hewce ye gihîştinê cîhê teyê de ku li pêşekê nexşeyê nîşan bide û xizmetên li ser cîhê pêşkêş bike.";
+NSMicrophoneUsageDescription = "Em dixwazin gihîştinê mikrofona teyê me bikar bînin da ku peyamên dengî tomar bikin.";
+NSPhotoLibraryAddUsageDescription = "Em dixwazin gihîştinê pergala wêneyan/mîndan lêdanê di Librarya Wênê de bi xwe daxl bikin.";
+NSPhotoLibraryUsageDescription = "Ev sepîkê pêdivî ye ku gihîştinê bi pirtûka wêneyê we bikar bîne da ku wêneya ku hûn dixwazin wekî wêneya profîla xwe bikar bînin, bibijêrin.";
+NSUserTrackingUsageDescription = "Ev nasnameyê di pêşkêşkirina reklamên personalîzeyê bo te tê bikaranîn. \"Ji bo neçun hewcedar bike ji vê serlêdanê\" ê hêza torê reklamên li ser te limit bike lê hejmara reklamanên ku tu digirî têkîştinî nake.";

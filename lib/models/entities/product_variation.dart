@@ -1,0 +1,638 @@
+import 'dart:convert';
+
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
+
+import '../../common/config.dart';
+import '../../common/constants.dart';
+import '../../data/boxes.dart';
+import '../../services/service_config.dart';
+import 'product.dart';
+import 'product_attribute.dart';
+import 'variable_attributes.dart';
+
+class ProductVariation {
+  String? id;
+  String? productId;
+  String? sku;
+  String? price;
+  String? regularPrice;
+  String? salePrice;
+  String? wholesalePrice;
+  String? dateOnSaleFrom;
+  String? dateOnSaleTo;
+  String? stockStatus;
+  String? description;
+  bool manageStock = false;
+  bool? onSale;
+  bool? inStock;
+  int? stockQuantity;
+  bool? backordersAllowed = false;
+  String? imageFeature;
+  List<Attribute> attributes = [];
+  Map<String?, Attribute> attributeMap = {};
+  bool isActive = true;
+
+  List<VariableAttribute>? attributeList;
+
+  /// Get the price of the product
+  ///
+  /// If the product has a sale price, return the sale price
+  ///
+  /// If the product does not have a sale price, return the regular price
+  ///
+  /// If the product does not have a regular price, return the price
+  double get valuePrice {
+    if (hasSalePrice) {
+      return double.tryParse(salePrice.toString()) ?? 0.0;
+    }
+
+    final vRegularPrice = double.tryParse(regularPrice.toString());
+    if (vRegularPrice != null && vRegularPrice > 0) {
+      return vRegularPrice;
+    }
+
+    return double.tryParse(price.toString()) ?? 0.0;
+  }
+
+  /// If the product has a sale price, return true
+  ///
+  /// If the product does not have a sale price, return false
+  bool get hasSalePrice {
+    final salePrice = double.tryParse(this.salePrice.toString());
+    return salePrice != null && salePrice > 0;
+  }
+
+  /// If the product has a regular price, return the regular price
+  ///
+  /// If the product does not have a regular price, return the price
+  bool get hasPrice {
+    final price = double.tryParse((regularPrice ?? this.price).toString());
+    return price != null && price > 0;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ProductVariation &&
+        listEquals(other.attributeList, attributeList);
+  }
+
+  @override
+  int get hashCode {
+    return attributeList.hashCode;
+  }
+
+  ProductVariation copyWith({
+    String? id,
+    String? productId,
+    String? stockStatus,
+    int? stockQuantity,
+    bool? backordersAllowed,
+    List<VariableAttribute>? attributeList,
+    String? price,
+    String? salePrice,
+    String? wholesalePrice,
+    String? imageFeature,
+    String? regularPrice,
+  }) {
+    return ProductVariation(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      stockStatus: stockStatus ?? this.stockStatus,
+      stockQuantity: stockQuantity ?? this.stockQuantity,
+      backordersAllowed: backordersAllowed ?? this.backordersAllowed,
+      attributeList: attributeList ?? this.attributeList,
+      price: price ?? this.price,
+      regularPrice: regularPrice ?? this.regularPrice,
+      salePrice: salePrice ?? this.salePrice,
+      wholesalePrice: wholesalePrice ?? this.wholesalePrice,
+      imageFeature: imageFeature ?? this.imageFeature,
+    );
+  }
+
+  ProductVariation({
+    this.id,
+    this.productId,
+    this.sku,
+    this.price,
+    this.regularPrice,
+    this.salePrice,
+    this.wholesalePrice,
+    this.dateOnSaleFrom,
+    this.dateOnSaleTo,
+    this.onSale,
+    this.inStock,
+    this.stockQuantity,
+    this.backordersAllowed = false,
+    this.imageFeature,
+    this.attributeList,
+    this.stockStatus,
+  });
+
+  ProductVariation.fromJson(Map parsedJson) {
+    id = parsedJson['id']?.toString();
+    productId = parsedJson['product_id']?.toString();
+    price = parsedJson['price']?.toString();
+    regularPrice = parsedJson['regular_price']?.toString();
+    salePrice = parsedJson['sale_price']?.toString();
+    dateOnSaleFrom = parsedJson['date_on_sale_from'] is Map
+        ? parsedJson['date_on_sale_from']['date']
+        : parsedJson['date_on_sale_from'];
+    dateOnSaleTo = parsedJson['date_on_sale_to'] is Map
+        ? parsedJson['date_on_sale_to']['date']
+        : parsedJson['date_on_sale_to'];
+    onSale = parsedJson['on_sale'] ?? false;
+    sku = parsedJson['sku'];
+    description =
+        parsedJson['description'] is String ? parsedJson['description'] : '';
+    inStock = parsedJson['in_stock'] ?? parsedJson['stock_status'] == 'instock';
+    if (parsedJson['manage_stock'] != null) {
+      if (parsedJson['manage_stock'] == 'parent') {
+        manageStock = inStock ?? false;
+      } else {
+        manageStock = parsedJson['manage_stock'];
+      }
+    }
+
+    if (inStock == true) {
+      /// parsedJson['manage_stock'] can be true, false, "parent".
+      if (manageStock) {
+        inStock = (parsedJson['stock_quantity'] ?? 0) > 0;
+      }
+    }
+    inStock! ? stockQuantity = parsedJson['stock_quantity'] : stockQuantity = 0;
+    backordersAllowed = (parsedJson['backorders_allowed'] ?? false) ||
+        ((parsedJson['backorders'] ?? 'no') != 'no');
+
+    /// In case manage stock is disabled,
+    /// customers can still purchase if stockstatus is backordered;
+    if (!manageStock && !(backordersAllowed ?? false)) {
+      backordersAllowed = parsedJson['backordered'] ?? false;
+    }
+
+    if (parsedJson['feature_image'] != null) {
+      imageFeature = parsedJson['feature_image'];
+    } else if (parsedJson['image'] != null) {
+      imageFeature = parsedJson['image']['src'];
+    }
+
+    stockStatus = parsedJson['stock_status'];
+    stockQuantity = parsedJson['stock_quantity'];
+
+    var list = <Attribute>[];
+    parsedJson['attributes']?.forEach((item) {
+      final attribute = Attribute.fromJson(item);
+      list.add(attribute);
+      attributeMap[attribute.keyAtrr] = attribute;
+    });
+    attributes = list;
+
+    if (parsedJson['attributes_arr'] != null) {
+      attributeList = List<VariableAttribute>.from(
+          List<Map<String, dynamic>>.from(parsedJson['attributes_arr'])
+              .map(VariableAttribute.fromMap));
+    }
+
+    final rawMetaData = parsedJson['meta_data'];
+    var metaData = <Map>[];
+    if (rawMetaData is List) {
+      metaData = List<Map>.from(rawMetaData);
+    } else {
+      metaData = <Map>[];
+    }
+    if (kAdvanceConfig.enableWooCommerceWholesalePrices &&
+        metaData.isNotEmpty &&
+        ServerConfig().isWooPluginSupported) {
+      var loggedInUser = UserBox().userInfo;
+      if (loggedInUser != null) {
+        var wholesalePriceKey = '${loggedInUser.role ?? ''}_wholesale_price';
+        var wholesalePriceMeta = metaData.firstWhere(
+          (item) => item['key'] == wholesalePriceKey,
+          orElse: () => {},
+        );
+        if (wholesalePriceMeta.isNotEmpty &&
+            wholesalePriceMeta['value'] != null &&
+            wholesalePriceMeta['value'] != '') {
+          if (salePrice?.isNotEmpty ?? false) {
+            salePrice = wholesalePriceMeta['value'];
+          }
+          price = wholesalePriceMeta['value'];
+          wholesalePrice = price;
+        }
+      }
+    }
+  }
+
+  ProductVariation.fromBigCommerceJson(Map json) {
+    id = json['id']?.toString();
+    productId = json['product_id']?.toString();
+    sku = json['sku']?.toString();
+    price = json['price']?.toString() ?? json['calculated_price']?.toString();
+    salePrice = json['sale_price']?.toString();
+    // calculatedPrice = json['calculated_price'];
+    // retailPrice = json['retail_price'];
+    // mapPrice = json['map_price'];
+    inStock = !(json['purchasing_disabled'] == true);
+    imageFeature = json['image_url'];
+
+    var list = <Attribute>[];
+    final options = json['option_values'];
+    for (var option in options) {
+      final attribute = Attribute.fromBigCommerceJson(option);
+      list.add(attribute);
+      attributeMap[attribute.keyAtrr] = attribute;
+    }
+    attributes = list;
+  }
+
+  ProductVariation.fromServerlessJson(Map json) {
+    id = json['Id']?.toString();
+    productId = json['ProductId']?.toString();
+    sku = json['SKU']?.toString();
+    price = json['Price']?.toString();
+    regularPrice =
+        json['RegularPrice']?.toString() ?? json['Price']?.toString();
+    salePrice = json['SalePrice']?.toString();
+    stockQuantity = int.tryParse(json['Stock'].toString());
+    inStock = stockQuantity == null || stockQuantity! > 0;
+    imageFeature = json['Image'];
+    onSale = salePrice != null && (double.tryParse(salePrice!) ?? 0.0) > 0;
+    var list = <Attribute>[];
+    final options = json['AttributeValues'];
+    if (options is Map) {
+      for (var option in options.entries) {
+        final attribute = Attribute.fromServerlessJson({
+          'Name': option.key,
+          'Value': option.value,
+        });
+
+        list.add(attribute);
+        attributeMap[attribute.keyAtrr] = attribute;
+      }
+    }
+    attributes = list;
+
+    // Parse attribute list if available
+    if (json['Attributes'] is List) {
+      attributeList = (json['Attributes'] as List)
+          .map((item) => VariableAttribute.fromMap(item))
+          .toList();
+    }
+  }
+
+  ProductVariation.fromMagentoJson(Map<String, dynamic> parsedJson,
+      Product product, Map<String, ProductAttribute>? allAttributesMap) {
+    String? getCustomAttribute(customAttributes, attribute) {
+      String? value;
+      if (customAttributes != null && customAttributes.length > 0) {
+        for (var item in customAttributes) {
+          if (item['attribute_code'] == attribute) {
+            value = item['value']?.toString();
+            break;
+          }
+        }
+      }
+      return value;
+    }
+
+    String getProductImageUrlByName(domain, imageName) {
+      return '$domain/pub/media/catalog/product/$imageName';
+    }
+
+    id = parsedJson['id'].toString();
+    sku = parsedJson['sku'];
+
+    final dateSaleFrom = getCustomAttribute(
+        parsedJson['custom_attributes'], 'special_from_date');
+    final dateSaleTo =
+        getCustomAttribute(parsedJson['custom_attributes'], 'special_to_date');
+    onSale = false;
+    var pPrice = parsedJson['price'];
+    var pSalePrice =
+        getCustomAttribute(parsedJson['custom_attributes'], 'special_price');
+    if (dateSaleFrom != null || dateSaleTo != null) {
+      final now = DateTime.now();
+      if (dateSaleFrom != null && dateSaleTo != null) {
+        onSale = now.isAfter(DateTime.parse(dateSaleFrom)) &&
+            now.isBefore(DateTime.parse(dateSaleTo));
+      }
+      if (dateSaleFrom != null && dateSaleTo == null) {
+        onSale = now.isAfter(DateTime.parse(dateSaleFrom));
+      }
+      if (dateSaleFrom == null && dateSaleTo != null) {
+        onSale = now.isBefore(DateTime.parse(dateSaleTo));
+      }
+      if (onSale! && pSalePrice != null) {
+        pPrice = pSalePrice;
+      }
+    } else if (pSalePrice != null &&
+        dateSaleFrom == null &&
+        dateSaleTo == null) {
+      onSale =
+          double.parse("${parsedJson["price"]}") > double.parse(pSalePrice);
+      pPrice = pSalePrice;
+    }
+
+    price = '$pPrice';
+    regularPrice = "${parsedJson["price"]}";
+    salePrice = onSale! ? pSalePrice : price;
+
+    inStock = parsedJson['status'] == 1;
+
+    final imageUrl =
+        getCustomAttribute(parsedJson['custom_attributes'], 'image');
+    imageFeature = imageUrl != null
+        ? getProductImageUrlByName(ServerConfig().url, imageUrl)
+        : product.imageFeature;
+
+    var attributeList = <Attribute>[];
+    final attributesConfig = kAdvanceConfig.enableAttributesConfigurableProduct;
+
+    for (var element in attributesConfig) {
+      final item = getCustomAttribute(parsedJson['custom_attributes'], element);
+      if (item != null) {
+        var productAttribute = allAttributesMap?[element];
+        var productAttributeOption = productAttribute?.options
+            ?.firstWhereOrNull((e) => e['value'] == item);
+        final attribute = Attribute.fromMagentoJson({
+          'value': item,
+          'attribute_code': element,
+          'option_label': productAttributeOption?['label']
+        });
+        attributeList.add(attribute);
+        attributeMap[attribute.keyAtrr] = attribute;
+      }
+    }
+    attributes = attributeList;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'sku': sku,
+      'price': price,
+      'regularPrice': regularPrice,
+      'sale_price': salePrice,
+      'wholesale_price': wholesalePrice,
+      'date_on_sale_from': dateOnSaleFrom,
+      'date_on_sale_to': dateOnSaleTo,
+      'on_sale': onSale,
+      'in_stock': inStock,
+      'stock_quantity': stockQuantity,
+      'image': {'src': imageFeature},
+      'attributes': attributes.map((item) {
+        return item.toJson();
+      }).toList()
+    };
+  }
+
+  Map<String, dynamic> toManagerJson() {
+    return {
+      'id': (id?.contains('temp') ?? false) ? null : id,
+      'regular_price': regularPrice,
+      'sale_price': salePrice,
+      'manage_stock': manageStock,
+      'stock_quantity': stockQuantity,
+      'is_active': isActive,
+      'attributes': jsonEncode(attributeList?.map((item) {
+        return item.toJson();
+      }).toList())
+    };
+  }
+
+  ProductVariation.fromLocalJson(Map json) {
+    try {
+      id = json['id'];
+      sku = json['sku'];
+      price = json['price'];
+      regularPrice = json['regularPrice'];
+      onSale = json['onSale'] ?? false;
+      salePrice = json['salePrice'] ?? json['sale_price'];
+      wholesalePrice = json['wholesale_price'];
+      dateOnSaleFrom = json['date_on_sale_from'];
+      dateOnSaleTo = json['date_on_sale_to'];
+      inStock = json['in_stock'];
+      inStock! ? stockQuantity = json['stock_quantity'] : stockQuantity = 0;
+      imageFeature = json['image']['src'];
+      var attributeList = <Attribute>[];
+
+      if (json['attributes'] != null) {
+        for (var item in json['attributes']) {
+          final attribute = Attribute.fromLocalJson(item);
+          attributeList.add(attribute);
+          attributeMap[attribute.keyAtrr] = attribute;
+        }
+      }
+
+      attributes = attributeList;
+    } catch (e) {
+      printLog(e.toString());
+    }
+  }
+
+  ProductVariation.fromShopifyJson(Map parsedJson) {
+    var compareAtPrice = parsedJson['compareAtPrice']?['amount'];
+
+    id = parsedJson['id'];
+    price = parsedJson['price']['amount'];
+    regularPrice = compareAtPrice ?? price;
+    onSale = compareAtPrice != null && compareAtPrice != price;
+    inStock = parsedJson['availableForSale'] ?? false;
+    salePrice = price;
+    stockQuantity = parsedJson['quantityAvailable'];
+    if (stockQuantity == null || stockQuantity! <= 0 && inStock!) {
+      backordersAllowed = true;
+      stockQuantity = null;
+    }
+    imageFeature = parsedJson['image']?['url'];
+
+    var attributeList = <Attribute>[];
+    parsedJson['selectedOptions']?.forEach((item) {
+      final attribute = Attribute.fromShopifyJson(item);
+      attributeList.add(attribute);
+      attributeMap[attribute.keyAtrr] = attribute;
+    });
+    attributes = attributeList;
+  }
+
+  ProductVariation.fromPrestaJson(Map json, Function(String) apiLink) {
+    id = json['id'].toString();
+    regularPrice =
+        (double.parse((json['price'] ?? 0.0).toString())).toStringAsFixed(2);
+    salePrice = (double.parse((json['wholesale_price'] ?? 0.0).toString()))
+        .toStringAsFixed(2);
+    price = (double.parse((json['wholesale_price'] ?? 0.0).toString()))
+        .toStringAsFixed(2);
+    if (salePrice != regularPrice) {
+      onSale = true;
+    } else {
+      onSale = false;
+    }
+    var associations = json['associations'];
+    if (associations != null) {
+      var stockAvailables = associations['stock_availables'];
+      if (stockAvailables is List && stockAvailables.isNotEmpty) {
+        stockQuantity = int.tryParse('${stockAvailables[0]['quantity']}');
+        inStock = (stockQuantity ?? 0) > 0;
+      }
+      var images = associations['images'];
+      if (images is List && images.isNotEmpty) {
+        imageFeature = apiLink(
+            'images/products/${json['id_product']}/${images.first['id']}');
+      }
+      var attributeList = <Attribute>[];
+      var productOptionValues = associations['product_option_values'];
+      if (productOptionValues is List && productOptionValues.isNotEmpty) {
+        for (var item in productOptionValues) {
+          attributeList.add(Attribute.fromPrestaJson(item));
+        }
+      }
+      attributes = attributeList;
+    }
+  }
+
+  ProductVariation.fromHaravanJson(Map json, Map product) {
+    id = json['id'].toString();
+    final regularPriceItem =
+        (double.parse((json['compare_at_price'] ?? 0.0).toString()));
+    regularPrice = regularPriceItem.toStringAsFixed(2);
+
+    final priceItem = double.parse((json['price'] ?? 0.0).toString());
+    salePrice = priceItem.toStringAsFixed(2);
+    price = priceItem.toStringAsFixed(2);
+
+    if (priceItem > 0 &&
+        regularPriceItem > 0 &&
+        priceItem != regularPriceItem) {
+      onSale = true;
+    } else {
+      onSale = false;
+    }
+
+    var inventoryQuantity = json['inventory_quantity'];
+    if (json['inventory_management'] == null) {
+      inStock = true;
+    } else if (inventoryQuantity is int) {
+      stockQuantity = inventoryQuantity;
+      inStock = (stockQuantity ?? 0) > 0;
+    }
+
+    /// Options
+    var attributeList = <Attribute>[];
+    var options = product['options'];
+    if (options != null && options is List) {
+      for (var i = 0; i < options.length; i++) {
+        final option = options[i];
+        final keyName = 'option${i + 1}';
+        final value = json[keyName];
+        final attr = Attribute.fromJson(
+          {
+            'id': option['id'],
+            'name': option['name'],
+            'option': value,
+          },
+        );
+
+        attributeList.add(attr);
+        attributeMap[option['name']] = attr;
+      }
+    }
+    attributes = attributeList;
+
+    /// Images
+    final imgId = json['image_id'];
+    if (imgId != null) {
+      var images = product['images'];
+      if (images != null && images is List) {
+        final img =
+            images.firstWhereOrNull((element) => element['id'] == imgId);
+        if (img != null) {
+          imageFeature = img['src'];
+        }
+      }
+    }
+
+    // if (images is List && images.isNotEmpty) {
+    //   imageFeature = apiLink(
+    //       'images/products/${json['id_product']}/${images.first['id']}');
+    // }
+  }
+
+  /// Get product ID from mix String productID-ProductVariantID
+  static String? cleanProductVariantID(productString) {
+    return productString.contains('-') ? productString.split('-')[1] : null;
+  }
+
+  /// Return true if [attributeMap] includes [attributes]
+  bool hasSameAttributes(Map<String?, String?>? attributes) {
+    if (attributes == null || attributes.isEmpty) {
+      return false;
+    }
+
+    var isSame = true;
+    final keys = attributes.keys.toList(growable: false);
+    final values = attributes.values.toList(growable: false);
+    for (var i = 0; i < attributes.length; i++) {
+      if (attributeMap[keys[i]] == null) {
+        /// In case this attribute can be any option, don't need to check.
+        continue;
+      }
+      if (attributeMap[keys[i]]!.option != values[i]) {
+        return false;
+      }
+    }
+    return isSame;
+  }
+
+  ProductVariation.fromNotion(Map parsedJson) {
+    id = '${UniqueKey()}';
+
+    var attributeList = <Attribute>[];
+    parsedJson['attributes']?.forEach((item) {
+      final attribute = Attribute.fromJson(item);
+      attributeList.add(attribute);
+      attributeMap[attribute.name] = attribute;
+    });
+    inStock = true;
+    attributes = attributeList;
+    imageFeature = parsedJson['image'];
+  }
+
+  @override
+  String toString() {
+    return 'ProductVariation {id: $id, price: $price}';
+  }
+
+  String getNameAttribute(String key) {
+    if (ServerConfig().isWooType) {
+      return attributes
+              .firstWhereOrNull((element) => element.keyAtrr == key)
+              ?.name ??
+          key;
+    }
+
+    return key;
+  }
+
+  /// Convert ProductVariation to Firestore Map
+  Map<String, dynamic> toFirestoreMap() {
+    return {
+      'Id': id,
+      'ProductId': productId,
+      'SKU': sku,
+      'Price': price,
+      'RegularPrice': regularPrice,
+      'SalePrice': salePrice,
+      'Stock': stockQuantity,
+      'Description': description,
+      'Image': imageFeature,
+      'ManageStock': manageStock,
+      'BackordersAllowed': backordersAllowed,
+      'AttributeValues': attributes.fold<Map<String, String>>(
+          {},
+          (map, attribute) => map
+            ..putIfAbsent(attribute.name ?? '', () => attribute.option ?? ''))
+    };
+  }
+}

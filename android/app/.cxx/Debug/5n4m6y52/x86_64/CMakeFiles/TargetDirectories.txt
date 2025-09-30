@@ -1,0 +1,2 @@
+/Users/minh/Documents/GitHub/fluxstore-core/android/app/.cxx/Debug/5n4m6y52/x86_64/CMakeFiles/edit_cache.dir
+/Users/minh/Documents/GitHub/fluxstore-core/android/app/.cxx/Debug/5n4m6y52/x86_64/CMakeFiles/rebuild_cache.dir
