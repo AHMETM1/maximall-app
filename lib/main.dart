@@ -42,7 +42,11 @@ Future<void> _firebaseMessagingBackgroundHandler(dynamic message) async {
 }
 
 void _setupApplication() {
-  Configurations().setConfigurationValues(environment);
+ import 'env.dart';
+
+// ...
+
+Configurations().setConfigurationValues(Env.environment);
 
   /// Fix issue android sdk version 22 can not run the app.
   if (UniversalPlatform.isAndroid) {
