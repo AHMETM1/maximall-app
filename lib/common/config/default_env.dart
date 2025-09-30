@@ -4,7 +4,6 @@ class DefaultConfig {
   static String environment = '';
   static String appName = 'Fluxstore';
   static bool enableRemoteConfigFirebase = false;
-  part of '../config.dart';
 
   // 🔹 Shopify Config (Senin mağaza ayarların)
   static const String shopifyStoreUrl = "https://maximalliq.com";
