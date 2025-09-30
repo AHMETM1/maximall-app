@@ -42,7 +42,7 @@ dependencies:
   quiver: 3.2.2
   async: any
   html: 0.15.5
-  vector_math: 2.1.4
+  vector_math: 2.2.0
   path: any
   flutter_svg: ^2.0.13
   flutter_local_notifications: 18.0.1
