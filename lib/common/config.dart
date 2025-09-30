@@ -6,7 +6,7 @@ import 'package:flux_ui/flux_ui.dart';
 
 import '../common/tools.dart';
 import '../data/boxes.dart';
-import '../env.dart';
+import '../env.dart'; // ✅ sadece bir kere olacak
 import '../models/entities/loyalty/member_type_enum.dart';
 import '../modules/dynamic_layout/index.dart';
 import '../services/service_config.dart';
